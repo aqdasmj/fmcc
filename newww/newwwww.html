@@ -1,0 +1,2147 @@
+```html name=new.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FMCC — Best Butcher Shop · Ratnagiri</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+
+<style>
+/* ==========================================================
+   FMCC — REDESIGN (single-file, inline CSS/JS)
+   Palette: keep red/gold/black | Fonts: keep Bebas/DM Sans/DM Serif
+   Features: Home/About/Shop/Cart/Wishlist/Account, WhatsApp checkout,
+             localStorage persistence, INR + mixed units (kg / g packs)
+========================================================== */
+
+/* ---------- TOKENS ---------- */
+:root{
+  --black:#070707;
+  --offwhite:#f4efe6;
+  --cream:#ede5d3;
+
+  --red:#be3527;
+  --red-deep:#8f1e13;
+  --red-glow:rgba(190,53,39,.22);
+
+  --gold:#c4a35a;
+  --gold-dim:#9a7d3f;
+  --gold-light:#e2cc96;
+
+  --charcoal:#111;
+  --surface:#151515;
+  --surface2:#1b1b1b;
+  --card:#1c1c1c;
+
+  --muted:rgba(244,239,230,.62);
+  --muted2:rgba(244,239,230,.34);
+
+  --border:rgba(196,163,90,.16);
+  --border-hi:rgba(196,163,90,.36);
+
+  --green:#25D366;
+  --green-bg:rgba(37,211,102,.10);
+
+  --radius:18px;
+  --radius2:26px;
+  --shadow: 0 20px 70px rgba(0,0,0,.55);
+
+  --max: 1180px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth; overflow-x:hidden; width:100%}
+body{
+  font-family:'DM Sans',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  overflow-x:hidden;
+  background:
+    radial-gradient(1000px 700px at 20% 0%, rgba(190,53,39,.14), transparent 55%),
+    radial-gradient(900px 700px at 85% 20%, rgba(196,163,90,.10), transparent 60%),
+    var(--black);
+  color:var(--offwhite);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:0;
+}
+a{text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+img{display:block;max-width:100%;user-select:none;-webkit-user-drag:none}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+input,select,textarea{font-family:inherit}
+
+/* Prevent iOS zoom on input focus */
+@media(max-width:768px){input,select,textarea{font-size:16px!important}}
+
+/* ---------- GRAIN OVERLAY ---------- */
+body::after{
+  content:'';
+  position:fixed; inset:0;
+  pointer-events:none; z-index:9997;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.02;
+}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:var(--max); margin:0 auto; padding:0 22px}
+.hr{height:1px;background:rgba(255,255,255,.06)}
+.sep{height:1px;background:var(--border)}
+.hidden{display:none!important}
+
+/* ---------- PROGRESS ---------- */
+#progress{
+  position:fixed; top:0; left:0;
+  height:2px; width:0;
+  background:linear-gradient(90deg,var(--red),var(--gold));
+  z-index:10000;
+  transition:width .05s linear
+}
+
+/* ---------- LOADER ---------- */
+#loader{
+  position:fixed; inset:0;
+  background:var(--black);
+  z-index:99999;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:18px;
+  transition:opacity .6s, visibility .6s
+}
+#loader.gone{opacity:0;visibility:hidden;pointer-events:none}
+.ld-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:56px;
+  letter-spacing:.12em;
+  animation:ldPulse 1.2s ease infinite alternate
+}
+.ld-bar{width:180px;height:1px;background:rgba(255,255,255,.12);position:relative;overflow:hidden}
+.ld-bar::after{content:'';position:absolute;left:0;top:0;height:100%;width:0;background:var(--gold);animation:ldFill 1.3s ease forwards}
+.ld-sub{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted2)}
+@keyframes ldPulse{to{opacity:.35}}
+@keyframes ldFill{to{width:100%}}
+
+/* ---------- TOP TICKER ---------- */
+.ticker{
+  position:relative;
+  background:linear-gradient(90deg, rgba(190,53,39,.95), rgba(190,53,39,.75));
+  overflow:hidden;
+  white-space:nowrap;
+  padding:8px 0;
+  z-index:102;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.ticker-inner{display:inline-flex;animation:ticker 40s linear infinite}
+.t-item{
+  font-size:10px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;
+  padding:0 36px;color:#fff;
+  opacity:.92
+}
+.t-item::before{content:'◆';margin-right:16px;font-size:6px;opacity:.55}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ---------- NAV ---------- */
+nav{
+  position:sticky; top:0;
+  z-index:500;
+  backdrop-filter: blur(20px);
+  background: rgba(7,7,7,.55);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.navbar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:14px;
+  padding:14px 0;
+}
+.brand{
+  display:flex; align-items:center; gap:12px; min-width:200px;
+}
+.mark{
+  width:40px; height:40px; border-radius:14px;
+  background:linear-gradient(135deg,var(--red),rgba(196,163,90,.55));
+  box-shadow:0 14px 34px rgba(190,53,39,.25);
+}
+.brand .name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px; letter-spacing:.12em;
+  line-height:1;
+}
+.brand .sub{
+  font-size:11px; color:var(--muted2);
+  letter-spacing:.08em; margin-top:2px;
+}
+
+.navlinks{display:flex; gap:10px; list-style:none; align-items:center}
+.navlinks a{
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:10px 12px;
+  border-radius:999px;
+  transition:all .2s ease;
+}
+.navlinks a:hover{color:var(--offwhite); background:rgba(255,255,255,.06)}
+.navlinks a.active{color:var(--offwhite); background:rgba(196,163,90,.12); border:1px solid rgba(196,163,90,.20)}
+
+.actions{display:flex; align-items:center; gap:10px}
+.pill{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:8px;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--offwhite);
+  font-size:12px;
+  letter-spacing:.10em;
+  transition:all .2s ease;
+  white-space:nowrap;
+}
+.pill:hover{border-color:rgba(196,163,90,.45); color:var(--gold)}
+.pill.primary{
+  background:linear-gradient(135deg,var(--red),var(--red-deep));
+  border-color:rgba(190,53,39,.45);
+  box-shadow:0 14px 34px rgba(190,53,39,.22);
+}
+.pill.primary:hover{color:#fff; transform:translateY(-1px)}
+.badge{
+  min-width:18px; height:18px;
+  display:none;
+  align-items:center; justify-content:center;
+  border-radius:999px;
+  background:var(--gold);
+  color:#060606;
+  font-weight:900;
+  font-size:11px;
+  padding:0 6px;
+}
+.hamburger{
+  display:none;
+  width:44px;height:44px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--offwhite);
+}
+.hamburger svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- MOBILE NAV OVERLAY ---------- */
+.mob-nav{
+  position:fixed; inset:0;
+  background:rgba(7,7,7,.98);
+  z-index:700;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  opacity:0; visibility:hidden;
+  transition:all .35s ease;
+}
+.mob-nav.open{opacity:1;visibility:visible}
+.mob-nav a{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:44px;
+  letter-spacing:.05em;
+  color:var(--offwhite);
+}
+.mob-nav a:hover{color:var(--gold)}
+.mob-nav .foot{
+  margin-top:10px;
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.1em;
+  text-align:center;
+  max-width:320px;
+}
+
+/* ---------- PAGES ---------- */
+.page{display:none}
+.page.active{display:block}
+
+/* ---------- COMPONENTS ---------- */
+.kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-size:11px;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+}
+.kicker::before{content:""; width:22px; height:1px; background:var(--gold)}
+.h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(56px,6.8vw,98px);
+  letter-spacing:.02em;
+  line-height:.88;
+}
+.serif{font-family:'DM Serif Display',serif}
+.lead{
+  color:var(--muted);
+  line-height:1.75;
+  font-size:14.5px;
+}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:10px;
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.04);
+  color:var(--offwhite);
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-weight:800;
+  transition:all .2s ease;
+  white-space:nowrap;
+}
+.btn:hover{border-color:rgba(196,163,90,.55); color:var(--gold)}
+.btn.red{
+  background:linear-gradient(135deg,var(--red),var(--red-deep));
+  border-color:rgba(190,53,39,.55);
+}
+.btn.red:hover{color:#fff; transform:translateY(-1px)}
+.btn.gold{
+  background:linear-gradient(135deg,var(--gold),var(--gold-light));
+  color:#0a0a0a;
+  border-color:rgba(196,163,90,.55);
+}
+.btn.gold:hover{transform:translateY(-1px)}
+.btn.wa{
+  background: rgba(37,211,102,.14);
+  border-color: rgba(37,211,102,.35);
+}
+.btn.wa:hover{color:#eafff2; border-color: rgba(37,211,102,.55)}
+.chipRow{display:flex; gap:8px; flex-wrap:wrap}
+.chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px;
+  border-radius:999px;
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.10);
+  color: var(--muted);
+  font-size:12px;
+}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--gold)}
+.dot.red{background:var(--red)}
+.dot.green{background:var(--green)}
+
+.card{
+  border-radius:var(--radius);
+  border:1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow: 0 10px 40px rgba(0,0,0,.30);
+}
+.card.pad{padding:18px}
+
+.section{padding:54px 0}
+.sectionHead{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:16px; margin-bottom:18px;
+}
+.sectionTitle{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:40px;
+  letter-spacing:.04em;
+  margin:0;
+}
+.sectionDesc{margin:6px 0 0; color:var(--muted); max-width:70ch; line-height:1.7}
+
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+
+.infoCard .cap{
+  font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--gold-light); opacity:.95;
+}
+.infoCard h3{margin:10px 0 8px; font-size:18px}
+.infoCard p{margin:0; color:var(--muted); line-height:1.7; font-size:13.5px}
+
+/* ---------- HOME HERO ---------- */
+.hero{
+  padding:40px 0 16px;
+}
+.heroGrid{
+  display:grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap:14px;
+  align-items:stretch;
+}
+.heroLeft{padding:34px}
+.heroLeft .tag{
+  font-family:'DM Serif Display',serif;
+  font-style:italic;
+  color:rgba(226,204,150,.95);
+  font-size:18px;
+  margin:12px 0 12px;
+}
+.heroLeft .ctaRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+.heroLeft .chipRow{margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08)}
+
+.heroRight{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.heroImg{
+  min-height: 350px;
+  border-radius: var(--radius2);
+  border:1px solid rgba(255,255,255,.10);
+  overflow:hidden;
+  position:relative;
+  box-shadow: var(--shadow);
+  background:
+    linear-gradient(180deg, rgba(7,7,7,0), rgba(7,7,7,.82)),
+    url("https://images.unsplash.com/photo-1604908176997-125f25cc500f?auto=format&fit=crop&w=1200&q=60");
+  background-size:cover;
+  background-position:center;
+}
+.heroImg::after{
+  content:"";
+  position:absolute; inset:0;
+  background: radial-gradient(600px 320px at 25% 20%, rgba(190,53,39,.18), transparent 60%);
+}
+.heroMini{
+  border-radius: var(--radius2);
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  padding:14px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  color:var(--muted);
+  font-size:13px;
+}
+.heroMini strong{color:var(--offwhite)}
+.heroMini .miniCta{
+  padding:10px 12px;
+  border-radius: 12px;
+  background: rgba(196,163,90,.14);
+  border:1px solid rgba(196,163,90,.22);
+  color: var(--gold-light);
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.08em;
+  white-space:nowrap;
+}
+
+/* ---------- SHOP ---------- */
+.shopLayout{display:grid; grid-template-columns: 310px 1fr; gap:12px; align-items:start}
+.side{
+  position:sticky;
+  top:76px;
+  padding:18px;
+}
+.side .ttl{
+  font-size:11px;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+  margin-bottom:12px;
+}
+.pills{display:flex; flex-wrap:wrap; gap:8px}
+.pillFilter{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:.06em;
+}
+.pillFilter:hover{border-color:rgba(196,163,90,.45); color:var(--gold)}
+.pillFilter.on{
+  background:rgba(196,163,90,.12);
+  border-color:rgba(196,163,90,.28);
+  color:var(--offwhite);
+}
+.searchRow{display:flex; gap:8px; margin-top:12px}
+.searchRow input{
+  width:100%;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--offwhite);
+  outline:none;
+}
+.searchRow input:focus{border-color:rgba(196,163,90,.55)}
+.sortRow{margin-top:10px}
+.sortRow select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--offwhite);
+  outline:none;
+}
+.sortRow option{background:var(--surface2)}
+
+.shopTop{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+.shopTop .count{color:var(--muted); font-size:13px}
+.products{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:12px;
+}
+.pCard{
+  border-radius: var(--radius);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  transition:transform .2s ease, border-color .2s ease;
+  position:relative;
+}
+.pCard:hover{transform:translateY(-2px); border-color:rgba(196,163,90,.35)}
+.pImg{
+  aspect-ratio: 1 / 1;
+  background: rgba(0,0,0,.28);
+  display:flex; align-items:center; justify-content:center;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.pImg img{
+  width:100%; height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 10px 26px rgba(0,0,0,.55));
+}
+.pBody{padding:14px}
+.pMeta{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px}
+.pCat{
+  font-size:10px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+}
+.pBadges{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end}
+.pBadge{
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color:var(--muted);
+}
+.pBadge.red{border-color:rgba(190,53,39,.35); background:rgba(190,53,39,.10); color:#fff}
+.pBadge.gold{border-color:rgba(196,163,90,.35); background:rgba(196,163,90,.10); color:var(--gold-light)}
+.pName{
+  font-family:'DM Serif Display',serif;
+  font-size:16px;
+  line-height:1.28;
+  margin-bottom:10px;
+}
+.pDesc{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.65;
+  margin-bottom:12px;
+  min-height: 2.6em;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.pFoot{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.pPrice{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px;
+  letter-spacing:.03em;
+}
+.pPrice small{font-family:'DM Sans',sans-serif; font-size:12px; color:var(--muted); letter-spacing:.06em}
+.pActions{display:flex; gap:8px; align-items:center}
+.iconBtn{
+  width:44px; height:44px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .2s ease;
+}
+.iconBtn:hover{border-color:rgba(196,163,90,.45); color:var(--gold)}
+.iconBtn.on{border-color:rgba(190,53,39,.55); color:#fff; background:rgba(190,53,39,.16)}
+.addBtn{
+  height:44px;
+  padding:0 14px;
+  border-radius:14px;
+  border:1px solid rgba(190,53,39,.50);
+  background:linear-gradient(135deg,var(--red),var(--red-deep));
+  color:#fff;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-weight:900;
+  transition:transform .2s ease;
+}
+.addBtn:hover{transform:translateY(-1px)}
+.addBtn:disabled{opacity:.4; cursor:not-allowed}
+
+.shopWA{
+  margin-top:12px;
+  padding:14px 16px;
+  border-radius: var(--radius);
+  border:1px solid rgba(37,211,102,.20);
+  background: rgba(37,211,102,.08);
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.shopWA p{color:var(--offwhite); font-size:13.5px; line-height:1.6}
+.shopWA strong{color:var(--green)}
+.shopWA .btn.wa{border-radius:14px; padding:12px 14px}
+
+/* ---------- CART ---------- */
+.cartLayout{display:grid; grid-template-columns: 1fr 360px; gap:12px; align-items:start}
+.cartList{padding:18px}
+.cartRow{
+  display:grid;
+  grid-template-columns: 72px 1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.cImg{
+  width:72px;height:72px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.10);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.cImg img{width:100%;height:100%;object-fit:contain;padding:10px}
+.cName{font-family:'DM Serif Display',serif; font-size:15px; margin-bottom:4px}
+.cMeta{color:var(--muted); font-size:12.5px}
+.cRight{display:flex; flex-direction:column; gap:10px; align-items:flex-end}
+.qty{
+  display:flex; align-items:center;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+}
+.qty button{
+  width:40px;height:40px;
+  border:none;
+  background:transparent;
+  color:var(--offwhite);
+  font-size:18px;
+}
+.qty button:hover{background:rgba(196,163,90,.10)}
+.qty span{
+  min-width:46px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--offwhite);
+  font-weight:700;
+}
+.cPrice{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  color:var(--gold-light);
+  letter-spacing:.03em;
+}
+.cRemove{
+  border:none;
+  background:none;
+  color:rgba(244,239,230,.25);
+  font-size:18px;
+}
+.cRemove:hover{color:var(--red)}
+.summary{padding:18px}
+.summary h3{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px;
+  letter-spacing:.04em;
+  margin-bottom:10px;
+}
+.sumRow{display:flex; justify-content:space-between; padding:8px 0; color:var(--muted); font-size:14px}
+.sumRow strong{color:var(--offwhite)}
+.sumTotal{
+  border-top:1px solid rgba(255,255,255,.08);
+  margin-top:10px;
+  padding-top:12px;
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.sumTotal .lbl{font-size:14px;color:var(--muted)}
+.sumTotal .val{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:34px;
+  letter-spacing:.04em;
+  color:var(--gold);
+}
+.promo{display:flex; gap:8px; margin-top:12px}
+.promo input{
+  flex:1;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--offwhite);
+  outline:none;
+}
+.promo button{height:44px; padding:0 14px; border-radius:14px; border:none; background:var(--gold); color:#070707; font-weight:900; letter-spacing:.10em; text-transform:uppercase}
+.note{margin-top:10px; color:var(--muted2); font-size:12px; line-height:1.6}
+.waCheckout{
+  width:100%;
+  margin-top:12px;
+  height:52px;
+  border-radius:16px;
+  border:1px solid rgba(37,211,102,.30);
+  background:linear-gradient(135deg, rgba(37,211,102,.95), rgba(29,168,81,.95));
+  color:#fff;
+  font-weight:900;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.waCheckout:hover{filter:brightness(1.03); transform:translateY(-1px)}
+.clearBtn{
+  width:100%;
+  margin-top:10px;
+  height:46px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.clearBtn:hover{border-color:rgba(190,53,39,.55); color:var(--red)}
+
+/* ---------- WISHLIST ---------- */
+.wlGrid{display:grid; grid-template-columns:repeat(4, 1fr); gap:12px}
+.empty{
+  padding:54px 18px;
+  text-align:center;
+  color:var(--muted);
+}
+.empty h3{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:40px;
+  letter-spacing:.04em;
+  margin-bottom:8px;
+  color:rgba(244,239,230,.35);
+}
+
+/* ---------- ABOUT / ACCOUNT ---------- */
+.pageHero{
+  padding:46px 0 14px;
+}
+.pageHero .banner{
+  border-radius: var(--radius2);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(800px 400px at 15% 30%, rgba(190,53,39,.14), transparent 60%),
+    rgba(255,255,255,.04);
+  box-shadow: var(--shadow);
+  padding:28px;
+  position:relative;
+}
+.pageHero .label{
+  font-size:11px;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+  margin-bottom:12px;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+}
+.pageHero .label::before{content:""; width:22px; height:1px; background:var(--gold)}
+.pageHero h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,6vw,86px);
+  letter-spacing:.02em;
+  line-height:.9;
+}
+.pageHero p{
+  margin-top:14px;
+  color:var(--muted);
+  max-width:70ch;
+  line-height:1.75;
+  font-size:14.5px;
+}
+
+.accountLayout{display:grid; grid-template-columns: 320px 1fr; gap:12px; align-items:start}
+.accSide{position:sticky; top:76px; padding:18px}
+.profile{display:flex; gap:12px; align-items:center; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:14px}
+.avatar{
+  width:54px;height:54px;border-radius:18px;
+  background:linear-gradient(135deg,var(--red),rgba(196,163,90,.55));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:.08em;
+}
+.pname{font-weight:800}
+.pmail{color:var(--muted); font-size:12px; margin-top:2px}
+.accNav{list-style:none; display:flex; flex-direction:column; gap:8px}
+.accNav button{
+  width:100%;
+  text-align:left;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  padding:12px 12px;
+  color:var(--muted);
+  letter-spacing:.06em;
+}
+.accNav button:hover{border-color:rgba(196,163,90,.45); color:var(--gold)}
+.accNav button.on{background:rgba(196,163,90,.12); border-color:rgba(196,163,90,.25); color:var(--offwhite); font-weight:800}
+.panel{padding:18px}
+.panel h2{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:36px;
+  letter-spacing:.04em;
+}
+.panel .sub{margin-top:6px; color:var(--muted); line-height:1.7}
+.form{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.form .fg{display:flex; flex-direction:column; gap:8px}
+.form .fg.full{grid-column: span 2}
+.form label{
+  font-size:11px;
+  letter-spacing:.20em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+}
+.form input, .form textarea{
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:var(--offwhite);
+  outline:none;
+}
+.form input:focus,.form textarea:focus{border-color:rgba(196,163,90,.55)}
+.form textarea{min-height:92px; resize:vertical}
+
+/* ---------- FOOTER ---------- */
+footer{
+  margin-top:18px;
+  border-top:1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.22);
+}
+.foot{
+  padding:34px 0;
+  display:grid;
+  grid-template-columns: 1.3fr .9fr .9fr;
+  gap:16px;
+}
+.foot h4{
+  font-size:11px;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+  margin-bottom:10px;
+}
+.foot p{color:var(--muted); line-height:1.75; font-size:13.5px}
+.foot a{color:var(--muted); display:block; padding:6px 0}
+.foot a:hover{color:var(--gold)}
+.copy{
+  padding:16px 0;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  color:rgba(244,239,230,.25);
+  font-size:12px;
+}
+
+/* ---------- FLOATING WA ---------- */
+.wa-float{
+  position:fixed;
+  bottom:26px; right:26px;
+  z-index:600;
+  width:56px;height:56px;
+  background:var(--green);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(37,211,102,.35),0 0 0 0 rgba(37,211,102,.4);
+  animation:waPulse 2.5s ease infinite;
+  transition:transform .3s;
+}
+.wa-float:hover{transform:scale(1.08)}
+.wa-float svg{width:26px;height:26px;fill:white}
+@keyframes waPulse{
+  0%{box-shadow:0 4px 24px rgba(37,211,102,.35),0 0 0 0 rgba(37,211,102,.4)}
+  70%{box-shadow:0 4px 24px rgba(37,211,102,.35),0 0 0 14px rgba(37,211,102,0)}
+  100%{box-shadow:0 4px 24px rgba(37,211,102,.35),0 0 0 0 rgba(37,211,102,0)}
+}
+
+/* ---------- MOBILE BOTTOM BAR ---------- */
+.mob-bottom-bar{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(17,17,17,.98);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  padding:10px 16px 10px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  z-index:490;
+  grid-template-columns:repeat(5,1fr);
+  gap:0;
+}
+.mob-bar-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;background:none;border:none;color:var(--muted);
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 4px;transition:color .25s;cursor:pointer;
+  min-height:48px;
+  position:relative;
+}
+.mob-bar-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;flex-shrink:0}
+.mob-bar-btn.active{color:var(--gold)}
+.mob-bar-btn.active svg{stroke:var(--gold)}
+.mob-bar-badge{
+  position:absolute;top:6px;right:calc(50% - 14px);
+  background:var(--red);color:#fff;
+  font-size:8px;font-weight:900;
+  width:14px;height:14px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width: 1100px){
+  .heroGrid{grid-template-columns:1fr}
+  .products{grid-template-columns:repeat(2,1fr)}
+  .shopLayout{grid-template-columns:1fr}
+  .side{position:static}
+  .cartLayout{grid-template-columns:1fr}
+  .accountLayout{grid-template-columns:1fr}
+  .accSide{position:static}
+  .wlGrid{grid-template-columns:repeat(2,1fr)}
+  .foot{grid-template-columns:1fr}
+}
+@media(max-width: 960px){
+  .navlinks{display:none}
+  .hamburger{display:flex}
+  .actions .pill:not(.primary){display:none}
+}
+@media(max-width:768px){
+  .actions .pill{display:none}
+  .form{grid-template-columns:1fr}
+  body{padding-bottom:70px}
+  .mob-bottom-bar{display:grid}
+  .wa-float{bottom:82px}
+  .heroLeft{padding:22px}
+  .heroImg{min-height:240px}
+  .grid3{grid-template-columns:1fr}
+  .grid4{grid-template-columns:1fr 1fr}
+  .products{grid-template-columns:repeat(2,1fr)}
+  .wlGrid{grid-template-columns:repeat(2,1fr)}
+  .wrap{padding:0 16px}
+}
+@media(max-width:380px){
+  .products{grid-template-columns:1fr}
+  .wlGrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-logo">FMCC</div>
+  <div class="ld-bar"></div>
+  <div class="ld-sub">Best Butcher Shop · Ratnagiri</div>
+</div>
+
+<!-- SCROLL PROGRESS -->
+<div id="progress"></div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="t-item">Halal Certified</span><span class="t-item">Farm Fresh Daily</span>
+    <span class="t-item">Same-Day Delivery</span><span class="t-item">Hygienically Packed</span>
+    <span class="t-item">Ratnagiri's Best Butcher Shop</span><span class="t-item">Fresh Chicken & Mutton</span>
+    <span class="t-item">Kebabs · Momos · Sausages · Parathas</span><span class="t-item">Bulk Orders Welcome</span>
+    <span class="t-item">Halal Certified</span><span class="t-item">Farm Fresh Daily</span>
+    <span class="t-item">Same-Day Delivery</span><span class="t-item">Hygienically Packed</span>
+    <span class="t-item">Ratnagiri's Best Butcher Shop</span><span class="t-item">Fresh Chicken & Mutton</span>
+    <span class="t-item">Kebabs · Momos · Sausages · Parathas</span><span class="t-item">Bulk Orders Welcome</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="wrap">
+    <div class="navbar">
+      <a class="brand" href="#" onclick="goPage('home'); return false;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 170" style="height:60px; width:auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.4)); margin-top:2px;">
+          <defs>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+              .fmcc-cursive { font-family: 'Dancing Script', cursive; font-size: 85px; fill: #39a737; font-weight: bold; }
+              .fmcc-tagline { font-family: sans-serif; font-size: 14px; font-weight: bold; fill: #d53127; letter-spacing: 0.5px; }
+            </style>
+          </defs>
+          <g transform="translate(10, 20)">
+            <path d="M 12 18 C 15 40 12 60 17 78 L 30 78 C 25 55 25 35 34 15 Z" fill="#cb3123"/>
+            <path d="M 37 14 C 30 35 29 55 33 78 L 47 78 C 45 55 46 35 56 10 Z" fill="#5c2a1c"/>
+            <path d="M 59 8 C 50 30 49 55 52 78 L 68 78 C 65 55 69 32 81 5 Z" fill="#af5932"/>
+            <path d="M 85 3 C 74 25 73 50 73 78 L 88 78 L 100 0 Z" fill="#f58232"/>
+          </g>
+          <path d="M 100 5 C 115 -5 125 5 125 15 C 125 22 118 25 112 25 C 105 25 105 35 105 45 L 98 90 C 97 98 92 102 85 102 L 20 102 C 15 102 12 98 12 94 C 12 90 15 86 20 86 L 82 86 L 88 45 C 88 30 92 15 100 5 Z" fill="#39a737"/>
+          <path d="M 102 40 L 125 40 C 130 40 130 48 125 48 L 100 48 Z" fill="#39a737"/>
+          <circle cx="35" cy="110" r="10" fill="#39a737"/>
+          <circle cx="75" cy="110" r="10" fill="#39a737"/>
+          <text x="110" y="102" class="fmcc-cursive">mcc</text>
+          <text x="10" y="155" class="fmcc-tagline">Freshness You Deserve, Quality You Trust.</text>
+        </svg>
+      </a>
+
+      <ul class="navlinks" id="navLinks">
+        <li><a href="#" data-page="home" class="active" onclick="goPage('home');return false;">Home</a></li>
+        <li><a href="#" data-page="shop" onclick="goPage('shop');return false;">Shop</a></li>
+        <li><a href="#" data-page="about" onclick="goPage('about');return false;">About</a></li>
+        <li><a href="#" data-page="account" onclick="goPage('account');return false;">Account</a></li>
+      </ul>
+
+      <div class="actions">
+        <a class="pill" href="tel:+918446166157" title="Call FMCC">+91 84461 66157</a>
+        <button class="pill" onclick="goPage('wishlist')" title="Wishlist">
+          Wishlist <span class="badge" id="wlBadge"></span>
+        </button>
+        <button class="pill primary" onclick="goPage('cart')" title="Cart">
+          Cart <span class="badge" id="cartBadge"></span>
+        </button>
+        <button class="hamburger" id="hbg" onclick="toggleMob()" title="Menu" aria-label="Menu">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mob-nav" id="mobNav">
+  <a href="#" onclick="goPage('home');closeMob();return false;">Home</a>
+  <a href="#" onclick="goPage('shop');closeMob();return false;">Shop</a>
+  <a href="#" onclick="goPage('about');closeMob();return false;">About</a>
+  <a href="#" onclick="goPage('wishlist');closeMob();return false;">Wishlist</a>
+  <a href="#" onclick="goPage('cart');closeMob();return false;">Cart</a>
+  <a href="#" onclick="goPage('account');closeMob();return false;" style="color:var(--gold)">My Account</a>
+  <div class="foot">+91 84461 66157 · Same-day delivery in Ratnagiri</div>
+</div>
+
+<!-- ===========================
+     PAGES
+=========================== -->
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <main class="wrap">
+    <section class="hero">
+      <div class="heroGrid">
+        <div class="card heroLeft">
+          <div class="kicker">Fresh cuts · Hygienic packing · Delivered</div>
+          <div style="margin-top:14px" class="h1">FRESH CUTS<br><span style="color:var(--gold)">DAILY</span></div>
+          <div class="tag">Farm to table, door to door.</div>
+          <p class="lead">
+            Halal-certified chicken & mutton, kebabs, momos, sausages and frozen specials —
+            hygienically packed and delivered across Ratnagiri.
+          </p>
+          <div class="ctaRow">
+            <a class="btn red" href="#" onclick="goPage('shop');return false;">Shop now</a>
+            <a class="btn wa" href="#" onclick="openWA('Hi FMCC! I want to place an order.');return false;">Order on WhatsApp</a>
+          </div>
+          <div class="chipRow">
+            <div class="chip"><span class="dot green"></span> Same-day delivery</div>
+            <div class="chip"><span class="dot"></span> Halal certified</div>
+            <div class="chip"><span class="dot red"></span> Hygienically packed</div>
+          </div>
+        </div>
+
+        <div class="heroRight">
+          <div class="heroImg" aria-label="Fresh meat cuts"></div>
+          <div class="heroMini">
+            <div><strong id="heroRecTitle">Today  s recommendation:</strong> <span id="heroRecText">Fresh chicken curry cut</span></div>
+            <a class="miniCta" href="#" onclick="goPage('shop');focusProductFromHero();return false;">View in shop</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <div>
+          <h2 class="sectionTitle">Shop by Category</h2>
+          <p class="sectionDesc">Find what you need fast. Clean cuts, fair pricing, quick checkout.</p>
+        </div>
+        <button class="pill" onclick="goPage('shop')">Open full shop</button>
+      </div>
+
+      <div class="grid3">
+        <a class="card pad infoCard" href="#" onclick="goShopCategory('Chicken');return false;">
+          <div class="cap">Category</div>
+          <h3>Chicken</h3>
+          <p>Breast, thighs, curry-cut, boneless & more.</p>
+        </a>
+        <a class="card pad infoCard" href="#" onclick="goShopCategory('Mutton');return false;">
+          <div class="cap">Category</div>
+          <h3>Mutton</h3>
+          <p>Fresh cuts for curry, fry, and special dishes.</p>
+        </a>
+        <a class="card pad infoCard" href="#" onclick="goShopCategory('Ready-to-cook');return false;">
+          <div class="cap">Category</div>
+          <h3>Ready-to-cook</h3>
+          <p>Kebabs, sausages, momos, frozen specials.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <div>
+          <h2 class="sectionTitle">Why FMCC</h2>
+          <p class="sectionDesc">A premium butcher experience—designed for speed, hygiene and consistency.</p>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="card pad infoCard">
+          <div class="cap">01</div>
+          <h3>Clean processing</h3>
+          <p>Hygienic handling and packing to keep freshness intact.</p>
+        </div>
+        <div class="card pad infoCard">
+          <div class="cap">02</div>
+          <h3>Fast ordering</h3>
+          <p>Shop quickly or place a WhatsApp order in one tap.</p>
+        </div>
+        <div class="card pad infoCard">
+          <div class="cap">03</div>
+          <h3>Fair pricing</h3>
+          <p>Transparent pricing with clean unit labels (kg / g packs).</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card pad" style="border-radius:var(--radius2); display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+        background: radial-gradient(700px 300px at 20% 30%, rgba(255,255,255,.10), rgba(255,255,255,.03)),
+                    linear-gradient(135deg, rgba(190,53,39,.92), rgba(143,30,19,.92));
+        border-color: rgba(255,255,255,.16);
+        box-shadow: 0 24px 80px rgba(190,53,39,.18);
+      ">
+        <div>
+          <div class="h1" style="font-size:clamp(42px,4.5vw,64px); line-height:.95">Ready to order?</div>
+          <p style="margin-top:8px; color:rgba(244,239,230,.85); line-height:1.7; max-width:62ch">
+            Add items to cart and send the order on WhatsApp. We’ll confirm availability and delivery time.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <a class="btn gold" href="#" onclick="goPage('shop');return false;">Shop now</a>
+          <a class="btn" href="#" onclick="openWA('Hi FMCC! I want to place an order.');return false;" style="border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.10); color:#fff">WhatsApp</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="page-about">
+  <main class="wrap">
+    <section class="pageHero">
+      <div class="banner">
+        <div class="label">About FMCC</div>
+        <h1>Fresh. Halal. Trusted.</h1>
+        <p>
+          FMCC is built around one promise: deliver fresh cuts with consistent quality and hygienic packing,
+          with same-day delivery in Ratnagiri when possible.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid3">
+        <div class="card pad infoCard">
+          <div class="cap">Our promise</div>
+          <h3>Hygienic packing</h3>
+          <p>Every order is packed carefully to keep freshness intact during delivery.</p>
+        </div>
+        <div class="card pad infoCard">
+          <div class="cap">Our promise</div>
+          <h3>Halal certified</h3>
+          <p>We maintain standards and cleanliness throughout processing.</p>
+        </div>
+        <div class="card pad infoCard">
+          <div class="cap">Our promise</div>
+          <h3>Customer first</h3>
+          <p>Quick WhatsApp communication and clear order summaries.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card pad" style="border-radius:var(--radius2)">
+        <h2 class="sectionTitle" style="margin-bottom:8px">FAQ</h2>
+        <p class="sectionDesc" style="margin-bottom:14px">Quick answers. Tap to open.</p>
+
+        <div style="display:grid; gap:10px">
+          <details class="card pad" style="background:rgba(255,255,255,.04)">
+            <summary style="cursor:pointer; font-weight:800; color:var(--offwhite)">Do you deliver the same day?</summary>
+            <p style="margin-top:10px; color:var(--muted); line-height:1.7">Yes—depending on time and delivery slots in Ratnagiri.</p>
+          </details>
+          <details class="card pad" style="background:rgba(255,255,255,.04)">
+            <summary style="cursor:pointer; font-weight:800; color:var(--offwhite)">How do I place an order?</summary>
+            <p style="margin-top:10px; color:var(--muted); line-height:1.7">Add products to cart and tap “Checkout on WhatsApp”.</p>
+          </details>
+          <details class="card pad" style="background:rgba(255,255,255,.04)">
+            <summary style="cursor:pointer; font-weight:800; color:var(--offwhite)">How are prices shown?</summary>
+            <p style="margin-top:10px; color:var(--muted); line-height:1.7">Prices are displayed in INR with unit labels like /kg or /500 g.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- SHOP -->
+<div class="page" id="page-shop">
+  <main class="wrap">
+    <section class="pageHero">
+      <div class="banner">
+        <div class="label">Shop</div>
+        <h1>Pick your cuts.</h1>
+        <p>Prices in ₹ INR. Mixed units supported (kg and gram packs). If price is missing, you can ask on WhatsApp.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shopLayout">
+        <aside class="card side">
+          <div class="ttl">Categories</div>
+          <div class="pills" id="catPills"></div>
+
+          <div class="searchRow">
+            <input id="searchInput" placeholder="Search (e.g., breast, kebab, curry cut)" />
+          </div>
+
+          <div class="sortRow">
+            <select id="sortSelect" title="Sort products">
+              <option value="featured">Sort: Featured</option>
+              <option value="price_asc">Price: Low → High</option>
+              <option value="price_desc">Price: High → Low</option>
+              <option value="name_asc">Name: A → Z</option>
+            </select>
+          </div>
+
+          <div style="margin-top:12px" class="sep"></div>
+
+          <div style="margin-top:12px" class="ttl">Quick actions</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn" style="padding:12px 14px; border-radius:14px" onclick="resetFilters()">Reset</button>
+            <button class="btn red" style="padding:12px 14px; border-radius:14px" onclick="goPage('cart')">Open cart</button>
+          </div>
+        </aside>
+
+        <section>
+          <div class="shopTop">
+            <div>
+              <h2 class="sectionTitle" style="margin:0">Products</h2>
+              <div class="count" id="shopCount">Showing 0 items</div>
+            </div>
+            <button class="pill primary" onclick="goPage('cart')">Cart <span class="badge" id="cartBadge2"></span></button>
+          </div>
+
+          <div class="products" id="productsGrid"></div>
+
+          <div class="shopWA card" style="margin-top:14px">
+            <p><strong>Tip:</strong> Add items to cart then send the order on WhatsApp. We’ll confirm availability and delivery time.</p>
+            <a class="btn wa" href="#" onclick="openWA('Hi FMCC! I want to place an order.');return false;">WhatsApp</a>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- CART -->
+<div class="page" id="page-cart">
+  <main class="wrap">
+    <section class="pageHero">
+      <div class="banner">
+        <div class="label">Cart</div>
+        <h1>Your order.</h1>
+        <p>Review items, adjust quantities, then checkout on WhatsApp. Prices are estimates until confirmed.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="cartLayout">
+        <div class="card cartList">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px">
+            <h2 class="sectionTitle" style="margin:0">Items</h2>
+            <button class="pill" onclick="clearCart()" title="Clear cart">Clear cart</button>
+          </div>
+          <div id="cartList"></div>
+          <div id="cartEmpty" class="empty hidden">
+            <h3>Cart is empty</h3>
+            <p>Add items from the shop and they’ll show up here.</p>
+            <a class="btn red" href="#" onclick="goPage('shop');return false;">Go to shop</a>
+          </div>
+        </div>
+
+        <aside class="card summary">
+          <h3>Summary</h3>
+          <div class="sumRow"><span>Subtotal</span> <strong id="sumSubtotal">₹0</strong></div>
+          <div class="sumRow"><span>Delivery</span> <strong id="sumDelivery">₹0</strong></div>
+          <div class="sumRow"><span>Discount</span> <strong id="sumDiscount">₹0</strong></div>
+          <div class="sumTotal">
+            <div class="lbl">Total</div>
+            <div class="val" id="sumTotal">₹0</div>
+          </div>
+
+          <div class="promo">
+            <input id="promoInput" placeholder="Promo code (optional)" />
+            <button onclick="applyPromo()">Apply</button>
+          </div>
+          <div class="note" id="promoNote">Supported demo codes: <strong style="color:var(--gold-light)">FMCC10</strong> (10% off)</div>
+
+          <button class="waCheckout" onclick="checkoutWhatsApp()">Checkout on WhatsApp</button>
+          <button class="clearBtn" onclick="goPage('shop')">Continue shopping</button>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- WISHLIST -->
+<div class="page" id="page-wishlist">
+  <main class="wrap">
+    <section class="pageHero">
+      <div class="banner">
+        <div class="label">Wishlist</div>
+        <h1>Saved items.</h1>
+        <p>Keep track of favorites and add them to your cart in one tap.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div id="wlEmpty" class="empty hidden">
+        <h3>No items yet</h3>
+        <p>Tap the heart on any product in the shop to save it here.</p>
+        <a class="btn red" href="#" onclick="goPage('shop');return false;">Browse products</a>
+      </div>
+      <div class="wlGrid" id="wlGrid"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ACCOUNT -->
+<div class="page" id="page-account">
+  <main class="wrap">
+    <section class="pageHero">
+      <div class="banner">
+        <div class="label">My Account</div>
+        <h1>Orders & profile.</h1>
+        <p>This is a demo account panel (front-end only). Your cart and wishlist are saved on your device.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="accountLayout">
+        <aside class="card accSide">
+          <div class="profile">
+            <div class="avatar" id="accAvatar">FM</div>
+            <div>
+              <div class="pname" id="accName">Guest</div>
+              <div class="pmail" id="accEmail">guest@fmcc.in</div>
+            </div>
+          </div>
+
+          <ul class="accNav">
+            <li><button id="accTabProfile" class="on" onclick="setAccTab('profile')">Profile</button></li>
+            <li><button id="accTabOrders" onclick="setAccTab('orders')">Orders</button></li>
+            <li><button id="accTabHelp" onclick="setAccTab('help')">Help</button></li>
+          </ul>
+        </aside>
+
+        <section class="card panel" id="accPanelProfile">
+          <h2>Profile</h2>
+          <p class="sub">Update your details (stored locally for this demo).</p>
+          <div class="form">
+            <div class="fg">
+              <label>Name</label>
+              <input id="pName" placeholder="Your name" />
+            </div>
+            <div class="fg">
+              <label>Phone</label>
+              <input id="pPhone" placeholder="+91 ..." />
+            </div>
+            <div class="fg full">
+              <label>Address</label>
+              <textarea id="pAddress" placeholder="Delivery address"></textarea>
+            </div>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn red" onclick="saveProfile()">Save</button>
+            <button class="btn" onclick="resetProfile()">Reset</button>
+          </div>
+        </section>
+
+        <section class="card panel hidden" id="accPanelOrders">
+          <h2>Orders</h2>
+          <p class="sub">This demo stores the last WhatsApp checkout message locally.</p>
+          <div id="ordersBox" style="margin-top:12px"></div>
+        </section>
+
+        <section class="card panel hidden" id="accPanelHelp">
+          <h2>Help</h2>
+          <p class="sub">Need help placing an order? Message us on WhatsApp.</p>
+          <div style="margin-top:12px">
+            <button class="btn wa" onclick="openWA('Hi FMCC! I need help with my order.');">WhatsApp Support</button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <div class="brand" style="min-width:auto">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 170" style="height:54px; width:auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.4));">
+            <g transform="translate(10, 20)">
+              <path d="M 12 18 C 15 40 12 60 17 78 L 30 78 C 25 55 25 35 34 15 Z" fill="#cb3123"/>
+              <path d="M 37 14 C 30 35 29 55 33 78 L 47 78 C 45 55 46 35 56 10 Z" fill="#5c2a1c"/>
+              <path d="M 59 8 C 50 30 49 55 52 78 L 68 78 C 65 55 69 32 81 5 Z" fill="#af5932"/>
+              <path d="M 85 3 C 74 25 73 50 73 78 L 88 78 L 100 0 Z" fill="#f58232"/>
+            </g>
+            <path d="M 100 5 C 115 -5 125 5 125 15 C 125 22 118 25 112 25 C 105 25 105 35 105 45 L 98 90 C 97 98 92 102 85 102 L 20 102 C 15 102 12 98 12 94 C 12 90 15 86 20 86 L 82 86 L 88 45 C 88 30 92 15 100 5 Z" fill="#39a737"/>
+            <path d="M 102 40 L 125 40 C 130 40 130 48 125 48 L 100 48 Z" fill="#39a737"/>
+            <circle cx="35" cy="110" r="10" fill="#39a737"/>
+            <circle cx="75" cy="110" r="10" fill="#39a737"/>
+            <text x="110" y="102" class="fmcc-cursive">mcc</text>
+            <text x="10" y="155" class="fmcc-tagline">Freshness You Deserve, Quality You Trust.</text>
+          </svg>
+        </div>
+        <p style="margin-top:10px">
+          Halal-certified chicken & mutton, ready-to-cook specials, and same-day delivery within Ratnagiri.
+        </p>
+      </div>
+      <div>
+        <h4>Pages</h4>
+        <a href="#" onclick="goPage('home');return false;">Home</a>
+        <a href="#" onclick="goPage('shop');return false;">Shop</a>
+        <a href="#" onclick="goPage('cart');return false;">Cart</a>
+        <a href="#" onclick="goPage('account');return false;">Account</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="tel:+918446166157">+91 84461 66157</a>
+        <a href="#" onclick="openWA('Hi FMCC! I want to place an order.');return false;">WhatsApp order</a>
+        <a href="#" onclick="openWA('Hi FMCC! I have a question.');return false;">WhatsApp support</a>
+      </div>
+    </div>
+    <div class="copy">
+      <div>© <span id="year"></span> FMCC</div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap">
+        <a href="#" onclick="goPage('about');return false;">About</a>
+        <a href="#" onclick="goPage('shop');return false;">Shop</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- FLOATING WHATSAPP -->
+<a class="wa-float" href="#" onclick="openWA('Hi FMCC! I want to place an order.');return false;" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M20.52 3.48A11.83 11.83 0 0012 0 12 12 0 001.62 18.68L0 24l5.5-1.44A12 12 0 0012 24a12 12 0 008.52-20.52zM12 22a9.9 9.9 0 01-5.05-1.39l-.36-.21-3.26.85.87-3.18-.24-.33A9.98 9.98 0 0112 2a10 10 0 010 20zm5.55-7.45c-.3-.15-1.76-.86-2.03-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.08-.12-.27-.2-.57-.35z"/></svg>
+</a>
+
+<!-- MOBILE BOTTOM BAR -->
+<div class="mob-bottom-bar" id="mobBar">
+  <button class="mob-bar-btn active" onclick="goPage('home')" data-page="home" aria-label="Home">
+    <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21a1.5 1.5 0 01-1.5 1.5H4.5A1.5 1.5 0 013 21v-10.5z"/><path d="M9.5 22v-7h5v7"/></svg>
+    Home
+  </button>
+  <button class="mob-bar-btn" onclick="goPage('shop')" data-page="shop" aria-label="Shop">
+    <svg viewBox="0 0 24 24"><path d="M6 2l-3 5v15a2 2 0 002 2h14a2 2 0 002-2V7l-3-5z"/><path d="M3 7h18"/><path d="M16 11a4 4 0 01-8 0"/></svg>
+    Shop
+  </button>
+  <button class="mob-bar-btn" onclick="goPage('wishlist')" data-page="wishlist" aria-label="Wishlist">
+    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    Wish
+    <span class="mob-bar-badge" id="wlBadgeMob">0</span>
+  </button>
+  <button class="mob-bar-btn" onclick="goPage('cart')" data-page="cart" aria-label="Cart">
+    <svg viewBox="0 0 24 24"><path d="M6 2l-3 5v15a2 2 0 002 2h14a2 2 0 002-2V7l-3-5z"/><path d="M3 7h18"/><path d="M16 11a4 4 0 01-8 0"/></svg>
+    Cart
+    <span class="mob-bar-badge" id="cartBadgeMob">0</span>
+  </button>
+  <button class="mob-bar-btn" onclick="goPage('account')" data-page="account" aria-label="Account">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Account
+  </button>
+</div>
+
+<script>
+/* ==========================================================
+   FMCC — Inline JS (rebuild from scratch)
+   - Page router
+   - Products rendering + filters + sorting
+   - Cart + wishlist (localStorage)
+   - WhatsApp checkout message
+   - INR + mixed units (kg, g packs)
+========================================================== */
+
+const WA_NUMBER = "918446166157";
+
+/* ---------- DEMO PRODUCT CATALOG ----------
+   You can edit/replace this with your real products.
+   unit:
+     - "kg" => price per kg
+     - "g"  => price per baseQty grams (pack)
+   If price is null => "Ask on WhatsApp"
+------------------------------------------ */
+const PRODUCTS = [
+  { id:"ck_curry", name:"Chicken Curry Cut", category:"Chicken", desc:"Perfect for curry. Fresh cut and packed.", price:220, unit:"kg", halal:true, img:"https://images.unsplash.com/photo-1604908176997-125f25cc500f?auto=format&fit=crop&w=800&q=60", featured:true },
+  { id:"ck_boneless", name:"Chicken Boneless", category:"Chicken", desc:"Clean boneless pieces for quick cooking.", price:280, unit:"kg", halal:true, img:"https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=800&q=60", featured:true },
+  { id:"ck_breast", name:"Chicken Breast", category:"Chicken", desc:"Lean, tender and versatile.", price:320, unit:"kg", halal:true, img:"https://images.unsplash.com/photo-1604909052743-94e6e8d3d11c?auto=format&fit=crop&w=800&q=60" },
+
+  { id:"mt_curry", name:"Mutton Curry Cut", category:"Mutton", desc:"Fresh mutton pieces for rich curry.", price:760, unit:"kg", halal:true, img:"https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=800&q=60", featured:true },
+  { id:"mt_bone", name:"Mutton With Bone", category:"Mutton", desc:"Great for slow cooking & deep flavor.", price:720, unit:"kg", halal:true, img:"https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=800&q=60" },
+
+  { id:"rtc_seekh", name:"Seekh Kebab (Pack)", category:"Ready-to-cook", desc:"Spiced kebabs, ready in minutes.", price:180, unit:"g", baseQty:500, halal:true, img:"https://images.unsplash.com/photo-1604908177074-0ef5c9752112?auto=format&fit=crop&w=800&q=60", featured:true },
+  { id:"rtc_momos", name:"Chicken Momos (Pack)", category:"Ready-to-cook", desc:"Juicy momos. Steam or fry.", price:160, unit:"g", baseQty:400, halal:true, img:"https://images.unsplash.com/photo-1604908177074-0ef5c9752112?auto=format&fit=crop&w=800&q=60" },
+  { id:"rtc_sausage", name:"Sausages (Pack)", category:"Ready-to-cook", desc:"Perfect for snacks & breakfast.", price:null, unit:"g", baseQty:500, halal:true, img:"https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=800&q=60" },
+
+  { id:"sp_paratha", name:"Frozen Parathas (Pack)", category:"Frozen", desc:"Quick meal, crisp and flaky.", price:120, unit:"g", baseQty:400, halal:false, img:"https://images.unsplash.com/photo-1604908177074-0ef5c9752112?auto=format&fit=crop&w=800&q=60" }
+];
+
+const ALL_CATEGORIES = (() => {
+  const set = new Set(PRODUCTS.map(p => p.category));
+  return ["All", ...Array.from(set)];
+})();
+
+/* ---------- STATE ---------- */
+const LS = {
+  cart: "fmcc_cart_v2",
+  wl: "fmcc_wishlist_v2",
+  promo: "fmcc_promo_v2",
+  profile: "fmcc_profile_v2",
+  lastOrder: "fmcc_last_order_v2"
+};
+
+let state = {
+  page: "home",
+  filterCat: "All",
+  search: "",
+  sort: "featured",
+  promoCode: loadLS(LS.promo) || "",
+  cart: loadLS(LS.cart) || {},         // { [productId]: qty }
+  wishlist: new Set(loadLS(LS.wl) || []),
+  heroProductId: null
+};
+
+/* ---------- UTIL ---------- */
+function qs(sel, root=document){ return root.querySelector(sel); }
+function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+function fmtINR(n){
+  const v = Number.isFinite(n) ? n : 0;
+  return "₹" + Math.round(v).toLocaleString("en-IN");
+}
+function unitLabel(p){
+  if(p.unit === "kg") return "/ kg";
+  if(p.unit === "g") return p.baseQty ? `/ ${p.baseQty} g` : "/ g";
+  return "";
+}
+function productPriceText(p){
+  if(p.price == null) return `<span style="font-family:'DM Sans'; font-size:12px; color:var(--muted); letter-spacing:.08em">Ask on WhatsApp</span>`;
+  return `${fmtINR(p.price)} <small>${unitLabel(p)}</small>`;
+}
+function openWA(text){
+  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank", "noopener");
+}
+function saveLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function loadLS(key){
+  try{
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : null;
+  }catch(e){ return null; }
+}
+
+/* ---------- ROUTER ---------- */
+function goPage(page){
+  state.page = page;
+
+  qsa(".page").forEach(p => p.classList.remove("active"));
+  const el = qs(`#page-${page}`);
+  if(el) el.classList.add("active");
+
+  // nav active
+  qsa("#navLinks a").forEach(a => a.classList.toggle("active", a.dataset.page === page));
+  // mobile bar active
+  qsa("#mobBar .mob-bar-btn").forEach(b => b.classList.toggle("active", b.dataset.page === page));
+
+  closeMob();
+
+  // render on enter
+  if(page === "shop") renderShop();
+  if(page === "cart") renderCart();
+  if(page === "wishlist") renderWishlist();
+  if(page === "account") renderAccount();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+window.goPage = goPage;
+
+/* ---------- MOBILE NAV ---------- */
+function toggleMob(){ qs("#mobNav").classList.toggle("open"); }
+function closeMob(){ qs("#mobNav").classList.remove("open"); }
+window.toggleMob = toggleMob;
+window.closeMob = closeMob;
+
+/* ---------- HOME HERO RECOMMENDATION ---------- */
+function pickHeroRec(){
+  const featured = PRODUCTS.filter(p => p.featured);
+  const pool = featured.length ? featured : PRODUCTS;
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  state.heroProductId = pick?.id || null;
+  qs("#heroRecText").textContent = pick ? pick.name : "Fresh cuts";
+}
+function focusProductFromHero(){
+  if(!state.heroProductId) return;
+  // set filters so it shows up
+  const p = PRODUCTS.find(x => x.id === state.heroProductId);
+  if(p){ state.filterCat = "All"; state.search = p.name; }
+  renderShop();
+  // scroll to products
+  setTimeout(() => qs("#productsGrid")?.scrollIntoView({behavior:"smooth", block:"start"}), 150);
+}
+window.focusProductFromHero = focusProductFromHero;
+
+/* ---------- FILTERS / SHOP ---------- */
+function goShopCategory(cat){
+  state.filterCat = cat;
+  state.search = "";
+  state.sort = "featured";
+  goPage("shop");
+}
+window.goShopCategory = goShopCategory;
+
+function resetFilters(){
+  state.filterCat = "All";
+  state.search = "";
+  state.sort = "featured";
+  qs("#searchInput").value = "";
+  qs("#sortSelect").value = "featured";
+  renderShop();
+}
+window.resetFilters = resetFilters;
+
+function buildCatPills(){
+  const host = qs("#catPills");
+  host.innerHTML = "";
+  ALL_CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "pillFilter" + (state.filterCat === cat ? " on" : "");
+    btn.textContent = cat;
+    btn.onclick = () => {
+      state.filterCat = cat;
+      renderShop();
+    };
+    host.appendChild(btn);
+  });
+}
+
+function filteredProducts(){
+  let list = [...PRODUCTS];
+
+  if(state.filterCat !== "All"){
+    list = list.filter(p => p.category === state.filterCat);
+  }
+  if(state.search.trim()){
+    const s = state.search.trim().toLowerCase();
+    list = list.filter(p =>
+      (p.name||"").toLowerCase().includes(s) ||
+      (p.desc||"").toLowerCase().includes(s) ||
+      (p.category||"").toLowerCase().includes(s)
+    );
+  }
+
+  // sort
+  const priceVal = p => (p.price == null ? Number.POSITIVE_INFINITY : p.price);
+  if(state.sort === "featured"){
+    list.sort((a,b) => (b.featured?1:0) - (a.featured?1:0) || a.name.localeCompare(b.name));
+  }else if(state.sort === "price_asc"){
+    list.sort((a,b) => priceVal(a) - priceVal(b));
+  }else if(state.sort === "price_desc"){
+    list.sort((a,b) => priceVal(b) - priceVal(a));
+  }else if(state.sort === "name_asc"){
+    list.sort((a,b) => a.name.localeCompare(b.name));
+  }
+  return list;
+}
+
+function renderShop(){
+  buildCatPills();
+
+  const grid = qs("#productsGrid");
+  const list = filteredProducts();
+  qs("#shopCount").textContent = `Showing ${list.length} item${list.length===1?"":"s"}`;
+
+  grid.innerHTML = "";
+  list.forEach(p => {
+    const inWL = state.wishlist.has(p.id);
+    const canAdd = p.price != null;
+
+    const el = document.createElement("article");
+    el.className = "pCard";
+    el.innerHTML = `
+      <div class="pImg">
+        <img src="${p.img || ""}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.opacity=.35" />
+      </div>
+      <div class="pBody">
+        <div class="pMeta">
+          <div class="pCat">${escapeHtml(p.category)}</div>
+          <div class="pBadges">
+            ${p.halal ? `<span class="pBadge gold">Halal</span>` : ``}
+            ${p.featured ? `<span class="pBadge red">Top</span>` : ``}
+          </div>
+        </div>
+        <div class="pName">${escapeHtml(p.name)}</div>
+        <div class="pDesc">${escapeHtml(p.desc || "")}</div>
+        <div class="pFoot">
+          <div class="pPrice">${productPriceText(p)}</div>
+          <div class="pActions">
+            <button class="iconBtn ${inWL ? "on" : ""}" title="Wishlist" aria-label="Wishlist" onclick="toggleWishlist('${p.id}')">
+              ♥
+            </button>
+            ${canAdd
+              ? `<button class="addBtn" onclick="addToCart('${p.id}', getDefaultAddQty('${p.id}'))">Add</button>`
+              : `<button class="addBtn" onclick="askWhatsApp('${p.id}')" style="border-color:rgba(37,211,102,.35); background:rgba(37,211,102,.16); color:#eafff2">Ask</button>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+
+  // inputs
+  const sIn = qs("#searchInput");
+  const sortSel = qs("#sortSelect");
+  if(sIn){
+    sIn.value = state.search;
+    sIn.oninput = (e) => { state.search = e.target.value; renderShop(); };
+  }
+  if(sortSel){
+    sortSel.value = state.sort;
+    sortSel.onchange = (e) => { state.sort = e.target.value; renderShop(); };
+  }
+}
+
+/* ---------- CART / WISHLIST ---------- */
+function getProduct(id){ return PRODUCTS.find(p => p.id === id); }
+
+function getDefaultAddQty(id){
+  const p = getProduct(id);
+  if(!p) return 1;
+  // kg items: default 1 kg; pack items: 1 pack
+  return 1;
+}
+
+function addToCart(id, qty){
+  const p = getProduct(id);
+  if(!p) return;
+  if(p.price == null){
+    askWhatsApp(id);
+    return;
+  }
+  const q = Number(qty) || 1;
+  state.cart[id] = (state.cart[id] || 0) + q;
+  persistCart();
+  updateBadges();
+}
+
+function setCartQty(id, qty){
+  const p = getProduct(id);
+  if(!p) return;
+
+  let q = qty;
+
+  // kg: allow 0.5 steps? keep it simple: integer for now unless you want half.
+  if(p.unit === "kg"){
+    q = Math.round(q); // integer kg in this version
+    q = clamp(q, 1, 99);
+  }else{
+    q = clamp(Math.round(q), 1, 99);
+  }
+
+  state.cart[id] = q;
+  persistCart();
+  renderCart();
+}
+
+function removeFromCart(id){
+  delete state.cart[id];
+  persistCart();
+  renderCart();
+  updateBadges();
+}
+
+function clearCart(){
+  state.cart = {};
+  persistCart();
+  renderCart();
+  updateBadges();
+}
+
+function persistCart(){
+  saveLS(LS.cart, state.cart);
+}
+
+function toggleWishlist(id){
+  if(state.wishlist.has(id)) state.wishlist.delete(id);
+  else state.wishlist.add(id);
+  saveLS(LS.wl, Array.from(state.wishlist));
+  updateBadges();
+
+  // if in shop, refresh only buttons quickly: simplest rerender
+  if(state.page === "shop") renderShop();
+  if(state.page === "wishlist") renderWishlist();
+}
+window.toggleWishlist = toggleWishlist;
+
+function addWishToCart(id){
+  addToCart(id, getDefaultAddQty(id));
+  goPage("cart");
+}
+
+function renderWishlist(){
+  const grid = qs("#wlGrid");
+  const empty = qs("#wlEmpty");
+  const ids = Array.from(state.wishlist);
+
+  if(ids.length === 0){
+    empty.classList.remove("hidden");
+    grid.innerHTML = "";
+    return;
+  }
+  empty.classList.add("hidden");
+  grid.innerHTML = "";
+
+  ids.map(getProduct).filter(Boolean).forEach(p => {
+    const el = document.createElement("article");
+    el.className = "pCard";
+    el.innerHTML = `
+      <div class="pImg">
+        <img src="${p.img || ""}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.opacity=.35" />
+      </div>
+      <div class="pBody">
+        <div class="pMeta">
+          <div class="pCat">${escapeHtml(p.category)}</div>
+          <div class="pBadges">
+            ${p.halal ? `<span class="pBadge gold">Halal</span>` : ``}
+          </div>
+        </div>
+        <div class="pName">${escapeHtml(p.name)}</div>
+        <div class="pDesc">${escapeHtml(p.desc || "")}</div>
+        <div class="pFoot">
+          <div class="pPrice">${productPriceText(p)}</div>
+          <div class="pActions">
+            <button class="iconBtn on" onclick="toggleWishlist('${p.id}')" title="Remove">♥</button>
+            ${p.price != null
+              ? `<button class="addBtn" onclick="addWishToCart('${p.id}')">Add</button>`
+              : `<button class="addBtn" onclick="askWhatsApp('${p.id}')" style="border-color:rgba(37,211,102,.35); background:rgba(37,211,102,.16); color:#eafff2">Ask</button>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+}
+
+function cartTotals(){
+  let subtotal = 0;
+  let hasAsk = false;
+
+  for(const [id, qty] of Object.entries(state.cart)){
+    const p = getProduct(id);
+    if(!p) continue;
+    if(p.price == null){ hasAsk = true; continue; }
+    subtotal += p.price * qty;
+  }
+
+  // demo delivery
+  const delivery = subtotal > 0 ? 0 : 0;
+
+  // promo
+  let discount = 0;
+  const code = (state.promoCode || "").trim().toUpperCase();
+  if(code === "FMCC10"){
+    discount = subtotal * 0.10;
+  }
+
+  const total = Math.max(0, subtotal + delivery - discount);
+  return { subtotal, delivery, discount, total, hasAsk };
+}
+
+function renderCart(){
+  const host = qs("#cartList");
+  const empty = qs("#cartEmpty");
+  const items = Object.entries(state.cart);
+
+  if(items.length === 0){
+    empty.classList.remove("hidden");
+    host.innerHTML = "";
+  }else{
+    empty.classList.add("hidden");
+    host.innerHTML = "";
+
+    items.forEach(([id, qty]) => {
+      const p = getProduct(id);
+      if(!p) return;
+
+      const linePrice = p.price == null ? null : p.price * qty;
+
+      const el = document.createElement("div");
+      el.className = "cartRow";
+      el.innerHTML = `
+        <div class="cImg"><img src="${p.img || ""}" alt="${escapeHtml(p.name)}" onerror="this.style.opacity=.35" /></div>
+        <div>
+          <div class="cName">${escapeHtml(p.name)}</div>
+          <div class="cMeta">${escapeHtml(p.category)} · ${p.price==null ? "Ask on WhatsApp" : (fmtINR(p.price) + " " + unitLabel(p))}</div>
+        </div>
+        <div class="cRight">
+          <div class="cPrice">${linePrice==null ? "—" : fmtINR(linePrice)}</div>
+          <div style="display:flex; gap:10px; align-items:center">
+            <div class="qty" aria-label="Quantity">
+              <button onclick="setCartQty('${id}', ${qty}-1)" aria-label="Decrease">−</button>
+              <span>${qty}</span>
+              <button onclick="setCartQty('${id}', ${qty}+1)" aria-label="Increase">+</button>
+            </div>
+            <button class="cRemove" onclick="removeFromCart('${id}')" title="Remove">✕</button>
+          </div>
+        </div>
+      `;
+      host.appendChild(el);
+    });
+  }
+
+  // summary
+  const t = cartTotals();
+  qs("#sumSubtotal").textContent = fmtINR(t.subtotal);
+  qs("#sumDelivery").textContent = fmtINR(t.delivery);
+  qs("#sumDiscount").textContent = "−" + fmtINR(t.discount);
+  qs("#sumTotal").textContent = fmtINR(t.total);
+
+  // promo input
+  qs("#promoInput").value = state.promoCode || "";
+
+  updateBadges();
+}
+
+/* ---------- PROMO ---------- */
+function applyPromo(){
+  const v = qs("#promoInput").value.trim().toUpperCase();
+  state.promoCode = v;
+  saveLS(LS.promo, state.promoCode);
+  renderCart();
+}
+window.applyPromo = applyPromo;
+
+/* ---------- WHATSAPP CHECKOUT ---------- */
+function askWhatsApp(id){
+  const p = getProduct(id);
+  if(!p) return;
+  const msg = `Hi FMCC! Please share price/availability for: ${p.name} (${p.category}).`;
+  openWA(msg);
+}
+window.askWhatsApp = askWhatsApp;
+
+function checkoutWhatsApp(){
+  const items = Object.entries(state.cart);
+  if(items.length === 0){
+    openWA("Hi FMCC! I want to place an order.");
+    return;
+  }
+
+  const profile = loadLS(LS.profile) || {};
+  const lines = [];
+  lines.push("Hi FMCC! I want to place an order:");
+  lines.push("");
+
+  items.forEach(([id, qty], idx) => {
+    const p = getProduct(id);
+    if(!p) return;
+    const pricePart = (p.price == null) ? "Price: Ask" : `Price: ${fmtINR(p.price)} ${unitLabel(p)}`;
+    lines.push(`${idx+1}) ${p.name} — Qty: ${qty} — ${pricePart}`);
+  });
+
+  const totals = cartTotals();
+  lines.push("");
+  lines.push(`Subtotal: ${fmtINR(totals.subtotal)}`);
+  if((state.promoCode||"").trim()) lines.push(`Promo: ${state.promoCode.toUpperCase()} (Discount: ${fmtINR(totals.discount)})`);
+  lines.push(`Total (est.): ${fmtINR(totals.total)}`);
+
+  if(profile.name || profile.phone || profile.address){
+    lines.push("");
+    lines.push("Delivery details:");
+    if(profile.name) lines.push(`Name: ${profile.name}`);
+    if(profile.phone) lines.push(`Phone: ${profile.phone}`);
+    if(profile.address) lines.push(`Address: ${profile.address}`);
+  }
+
+  const msg = lines.join("\n");
+  saveLS(LS.lastOrder, { at: new Date().toISOString(), text: msg, total: totals.total });
+  openWA(msg);
+}
+window.checkoutWhatsApp = checkoutWhatsApp;
+
+/* ---------- BADGES ---------- */
+function updateBadges(){
+  const cartCount = Object.values(state.cart).reduce((a,b)=>a+(Number(b)||0),0);
+  const wlCount = state.wishlist.size;
+
+  const setBadge = (el, n) => {
+    if(!el) return;
+    if(n > 0){ el.style.display = "inline-flex"; el.textContent = String(n); }
+    else{ el.style.display = "none"; el.textContent = "0"; }
+  };
+
+  setBadge(qs("#cartBadge"), cartCount);
+  setBadge(qs("#wlBadge"), wlCount);
+  setBadge(qs("#cartBadge2"), cartCount);
+
+  setBadge(qs("#cartBadgeMob"), cartCount);
+  setBadge(qs("#wlBadgeMob"), wlCount);
+}
+
+/* ---------- ACCOUNT ---------- */
+function setAccTab(tab){
+  const btns = {
+    profile: qs("#accTabProfile"),
+    orders: qs("#accTabOrders"),
+    help: qs("#accTabHelp")
+  };
+  Object.values(btns).forEach(b => b.classList.remove("on"));
+  btns[tab]?.classList.add("on");
+
+  qs("#accPanelProfile").classList.toggle("hidden", tab !== "profile");
+  qs("#accPanelOrders").classList.toggle("hidden", tab !== "orders");
+  qs("#accPanelHelp").classList.toggle("hidden", tab !== "help");
+
+  if(tab === "orders") renderOrders();
+}
+window.setAccTab = setAccTab;
+
+function renderAccount(){
+  const profile = loadLS(LS.profile) || { name:"", phone:"", address:"" };
+  qs("#pName").value = profile.name || "";
+  qs("#pPhone").value = profile.phone || "";
+  qs("#pAddress").value = profile.address || "";
+
+  qs("#accName").textContent = profile.name || "Guest";
+  qs("#accEmail").textContent = (profile.phone ? `${profile.phone}` : "guest@fmcc.in");
+
+  // avatar
+  const initials = (profile.name || "FM").trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase()).join("");
+  qs("#accAvatar").textContent = initials || "FM";
+}
+
+function saveProfile(){
+  const profile = {
+    name: qs("#pName").value.trim(),
+    phone: qs("#pPhone").value.trim(),
+    address: qs("#pAddress").value.trim()
+  };
+  saveLS(LS.profile, profile);
+  renderAccount();
+}
+window.saveProfile = saveProfile;
+
+function resetProfile(){
+  localStorage.removeItem(LS.profile);
+  renderAccount();
+}
+window.resetProfile = resetProfile;
+
+function renderOrders(){
+  const box = qs("#ordersBox");
+  const last = loadLS(LS.lastOrder);
+  if(!last){
+    box.innerHTML = `<div class="card pad" style="background:rgba(255,255,255,.04)">No orders yet. Checkout once and it will appear here.</div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="card pad" style="background:rgba(255,255,255,.04)">
+      <div style="color:var(--muted2); font-size:12px; letter-spacing:.12em; text-transform:uppercase">Last WhatsApp checkout</div>
+      <div style="margin-top:10px; color:var(--muted); font-size:13px">Date: <strong style="color:var(--offwhite)">${new Date(last.at).toLocaleString()}</strong></div>
+      <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,.06); padding-top:10px; white-space:pre-wrap; color:var(--offwhite); line-height:1.6">${escapeHtml(last.text)}</div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn wa" onclick="openWA(${JSON.stringify(last.text)})">Send again</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- SAFETY ---------- */
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* ---------- SCROLL PROGRESS ---------- */
+function setupProgress(){
+  const bar = qs("#progress");
+  window.addEventListener("scroll", () => {
+    const h = document.documentElement;
+    const scrollTop = h.scrollTop || document.body.scrollTop;
+    const scrollHeight = h.scrollHeight - h.clientHeight;
+    const p = scrollHeight ? (scrollTop / scrollHeight) : 0;
+    bar.style.width = (p * 100).toFixed(2) + "%";
+  }, { passive:true });
+}
+
+/* ---------- INIT ---------- */
+(function init(){
+  qs("#year").textContent = new Date().getFullYear();
+
+  // loader
+  window.addEventListener("load", () => {
+    setTimeout(() => qs("#loader").classList.add("gone"), 450);
+  });
+
+  setupProgress();
+  pickHeroRec();
+
+  updateBadges();
+  buildCatPills();
+
+  // close mobile nav on escape
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") closeMob();
+  });
+})();
+</script>
+
+</body>
+</html>
+```
